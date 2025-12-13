@@ -1,0 +1,95 @@
+[gd_scene load_steps=14 format=3 uid="uid://d0c3febvmi46y"]
+
+[ext_resource type="Script" uid="uid://bxsumardcip2w" path="res://slingshot.gd" id="1_6ekd3"]
+[ext_resource type="Script" uid="uid://co74at1eax33u" path="res://frog.gd" id="1_slgur"]
+[ext_resource type="Texture2D" uid="uid://km0vqv6ucjy" path="res://Art/BlueBlue/ToxicFrogBlueBlue_Hop.png" id="2_slgur"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_byod8"]
+atlas = ExtResource("2_slgur")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j38ec"]
+atlas = ExtResource("2_slgur")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5cyyp"]
+atlas = ExtResource("2_slgur")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rd326"]
+atlas = ExtResource("2_slgur")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cvt0w"]
+atlas = ExtResource("2_slgur")
+region = Rect2(192, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_40hiu"]
+atlas = ExtResource("2_slgur")
+region = Rect2(240, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_omj1a"]
+atlas = ExtResource("2_slgur")
+region = Rect2(288, 0, 48, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_8kk5g"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_byod8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j38ec")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5cyyp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rd326")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cvt0w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_40hiu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_omj1a")
+}],
+"loop": false,
+"name": &"jump",
+"speed": 8.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_aumaf"]
+size = Vector2(16.5, 6)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_o353j"]
+radius = 3.0
+
+[node name="Frog" type="CharacterBody2D"]
+script = ExtResource("1_slgur")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_8kk5g")
+animation = &"jump"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-1.75, 3)
+shape = SubResource("RectangleShape2D_aumaf")
+
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(16, 1)
+shape = SubResource("CircleShape2D_o353j")
+disabled = true
+debug_color = Color(0.87677765, 0.23790404, 0.62408537, 0.41960785)
+
+[node name="Line2D" type="Line2D" parent="."]
+
+[node name="Slingshot" type="Node" parent="."]
+script = ExtResource("1_6ekd3")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(3, 3)
