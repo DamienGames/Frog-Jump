@@ -1,79 +1,88 @@
 extends Node
 
-@export var max_force := 1200.0
-@export var min_force := 200.0
-@export var max_drag := 150.0
-@onready var camera: Camera2D = $"../Camera2D"
+@export var min_force := 250.0
+@export var max_force := 1000.0
+@export var max_drag := 200.0
+
+@export var gravity := 2500.0
+
+@export var preview_points := 22
+@export var preview_ratio := 0.4
 
 var dragging := false
 var drag_start: Vector2
-var drag_current: Vector2
-@export var preview_points := 16
-@export var preview_ratio := 0.1 # 60%
-@export var gravity := 2500.0
+@onready var line: Line2D = $"../Line2D"
 
-@onready var frog: CharacterBody2D = $".."
-@onready var line := $"../Line2D"
-@onready var animated_sprite_2d: AnimatedSprite2D = $"../AnimatedSprite2D"
+@onready var frog := owner as CharacterBody2D
+@onready var camera := frog.get_viewport().get_camera_2d()
 
 
 func _unhandled_input(event):
 	if event is InputEventMouseButton:
-		if event.pressed:
-			if _clicked_on_frog(event.position):
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed and frog.is_on_floor():
 				dragging = true
-				drag_start = get_viewport().get_mouse_position()
 				line.visible = true
-		else:
-			if dragging:
+				drag_start = camera.get_global_mouse_position()
+			elif not event.pressed and dragging:
 				_release()
-
-
-func _clicked_on_frog(pos: Vector2) -> bool:
-	return frog.get_viewport_rect().has_point(pos)
 
 func _process(_delta):
 	if dragging:
-		drag_current = get_viewport().get_mouse_position()
-		_update_line()
+		_update_preview()
 
 
-func _update_line():
+func _update_preview():
 	line.clear_points()
 
 	var mouse_now = camera.get_global_mouse_position()
-	var drag = drag_start - mouse_now
-	drag = drag.limit_length(max_drag)
 
-	var strength = drag.length() / max_drag
+	# vetor REAL do arrasto
+	var raw_drag = drag_start - mouse_now
+	var drag_len = raw_drag.length()
+
+	# força normalizada
+	var strength = clamp(drag_len / max_drag, 0.0, 1.0)
+
+	# drag limitado
+	var drag = raw_drag.limit_length(max_drag)
+
+	# velocidade inicial REAL
 	var force = lerp(min_force, max_force, strength)
-
 	var velocity = drag.normalized() * force
 
-	var start_global := frog.global_position
+	# cor da linha (verde → vermelho)
+	line.default_color = Color.from_hsv(
+		lerp(0.33, 0.0, strength),
+		1.0,
+		1.0
+	)
 
-	var total_time := 0.8
+	var start_global = frog.global_position
+
+	var total_time := 0.9
 	var preview_time := total_time * preview_ratio
 
 	for i in range(preview_points):
-		var t := preview_time * float(i) / float(preview_points - 1)
-		var global_pos: Vector2 = start_global + velocity * t + Vector2(0, gravity) * t * t * 0.5
-		var local_pos: Vector2 = line.to_local(global_pos)
-		line.add_point(local_pos)
+		var t = preview_time * float(i) / float(preview_points - 1)
+
+		var global_pos =			start_global			+ velocity * t			+ Vector2(0, gravity) * t * t * 0.5
+
+		# GLOBAL → LOCAL
+		line.add_point(line.to_local(global_pos))
+		# pontilhado simples (remove pontos intermediários)
 
 
 func _release():
+	
+	$"../AnimatedSprite2D".play("jump")
 	dragging = false
 	line.visible = false
 
-	var drag = drag_start - drag_current
-	drag = drag.limit_length(max_drag)
+	var mouse_now = camera.get_global_mouse_position()
+	var raw_drag = drag_start - mouse_now
+	var strength = clamp(raw_drag.length() / max_drag, 0.0, 1.0)
+	var drag = raw_drag.limit_length(max_drag)
 
-	var strength = drag.length() / max_drag
 	var force = lerp(min_force, max_force, strength)
-
-	var direction = drag.normalized()
-	frog.velocity = direction * force
-	animated_sprite_2d.play("jump")
-
-	
+	frog.velocity = drag.normalized() * force

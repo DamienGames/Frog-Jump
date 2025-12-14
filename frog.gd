@@ -10,5 +10,10 @@ func _physics_process(delta):
 		velocity.x = move_toward(velocity.x, 0, ground_friction * delta)
 	else:
 		velocity.y += gravity * delta
-
 	move_and_slide()
+
+func _on_dead_zone_body_entered(body: CharacterBody2D) -> void:
+	animated_sprite_2d.play("dead")
+	velocity.y -= 500
+	await animated_sprite_2d.animation_finished
+	queue_free()
